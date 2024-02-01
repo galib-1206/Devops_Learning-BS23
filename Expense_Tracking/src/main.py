@@ -4,8 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, DECIMAL, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base, Session, relationship
 from sqlalchemy.orm import sessionmaker
-# from datetime import datetime
-from typing import List
+
 
 DATABASE_URL = "mysql+mysqlconnector://root:iit123@localhost:3306/exampleDB"
 
@@ -22,6 +21,7 @@ async def root():
 
 
 # Dependency to get the database session
+
 def get_db():
     db = SessionLocal()
     try:
@@ -57,31 +57,3 @@ class Expenditure(Base):
 Base.metadata.create_all(bind=engine)
 
 
-
-# # # Pydantic Model
-# # class UserCreate(BaseModel):
-# #     id: int
-# #     name: str
-# #     age: int
-
-# class UserResponse(BaseModel):
-#     id: int
-#     name: str
-#     age: int
-
-
-
-
-# # Create User
-# @app.post("/users/", response_model=UserResponse)
-# async def create_user(user: User, db: Session = Depends(get_db)):
-#     db.add(user)
-#     db.commit()
-#     db.refresh(user)
-#     return UserResponse(id=user.id, name=user.name, age=user.age)
-
-# Get all Users
-# @app.get("/users/", response_model=List[User])
-# async def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-#     users = db.query(User).offset(skip).limit(limit).all()
-#     return users
