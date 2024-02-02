@@ -1,4 +1,4 @@
-from ast import List
+
 import datetime
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel
@@ -7,7 +7,9 @@ from sqlalchemy.orm import declarative_base, Session, relationship
 from sqlalchemy.orm import sessionmaker
 
 
-DATABASE_URL = "mysql+mysqlconnector://root:iit123@localhost:3306/exampleDB"
+## DATABASE_URL = "mysql+mysqlconnector://root:iit123@localhost:3306/exampleDB"
+## DATABASE_URL = "postgresql://postgres:iit123@localhost:5432/my_pgdb"
+DATABASE_URL = "postgresql://postgres:iit123@localhost:5433/my_pgdb"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

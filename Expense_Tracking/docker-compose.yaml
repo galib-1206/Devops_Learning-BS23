@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_PASSWORD: iit123
+      POSTGRES_DB: my_pgdb
+      POSTGRES_USER: postgres
+
+# mapped the PostgreSQL container port 5432 to the host machine port 5433 . 
+# Avoid conflicts with a locally installed PostgreSQL server.
+
+  # mysql:
+  #     image: mysql
+  #     container_name: expense_tracker
+  #     restart: unless-stopped
+
+  #     ports:
+  #         - 3306:3306
+
+  #     environment:
+  #         MYSQL_DATABASE: 
+  #         MYSQL_PASSWORD: 
+  #         MYSQL_ROOT_PASSWORD: 
