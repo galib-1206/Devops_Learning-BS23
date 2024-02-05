@@ -1,17 +1,12 @@
-
 import datetime
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, DECIMAL, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, DECIMAL, DateTime, ForeignKey, func
 from sqlalchemy.orm import declarative_base, Session, relationship
 from sqlalchemy.orm import sessionmaker
 
-
-## DATABASE_URL = "mysql+mysqlconnector://root:iit123@localhost:3306/exampleDB"
-## DATABASE_URL = "postgresql://postgres:iit123@localhost:5432/my_pgdb"
 DATABASE_URL = "postgresql://postgres:iit123@127.0.0.1:5433/my_pgdb"
-
-## container only detects IP address
+# DATABASE_URL = "postgresql://postgres:iit123@localhost:5432/my_pgdb"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -23,10 +18,6 @@ app = FastAPI()
 async def root():
     return {"message": "Hello World"}
 
-
-
-# Dependency to get the database session
-
 def get_db():
     db = SessionLocal()
     try:
@@ -35,17 +26,40 @@ def get_db():
         db.close()
 
 
-# User model
+
+
+# User Model
+class UserBase(BaseModel):
+    name: str
+    email: str
+    password: str
+    date_of_birth: datetime.date
+
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), index=True)
-    age = Column(Integer)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
+    name = Column(String(45), nullable=False)
+    email = Column(String(45), unique=True, nullable=False)
+    password = Column(String(100), nullable=False)
+    date_of_birth = Column(DateTime)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    expenditures = relationship("Expenditure", back_populates="user")
+    # expenditures = relationship("Expenditure", back_populates="user")
+
+
+
 
 # Expenditure model
+    
+class Expenditure(BaseModel):
+    userID: str
+    date: str
+    time: str
+    event: str
+    details: str
+    expense: float
 class Expenditure(Base):
     __tablename__ = "expenditures"
 
@@ -56,36 +70,50 @@ class Expenditure(Base):
     event = Column(String(255), index=True)
     expense = Column(DECIMAL(10, 2))
 
-    user = relationship("User", back_populates="expenditures")
+    # user = relationship("User", back_populates="expenditures")
 
-# # Create tables
-Base.metadata.create_all(bind=engine)
-
-
-#   ## Pydantic Model
-# class UserCreate(BaseModel):
-#     id: int
-#     name: str
-#     age: int
-
-# class UserResponse(BaseModel):
-#     id: int
-#     name: str
-#     age: int
+# Create tables
+Base.metadata.create_all(engine)
 
 
+# User Service 
+
+@app.get("/users")
+def get_all_users(db: Session = Depends(get_db)):
+
+    users = db.query(User).all()
+
+    return {"users": users}
 
 
-# # Create User
-# @app.post("/users/", response_model=UserResponse)
-# async def create_user(user: User, db: Session = Depends(get_db)):
-#     db.add(user)
-#     db.commit()
-#     db.refresh(user)
-#     return UserResponse(id=user.id, name=user.name, age=user.age)
+@app.post("/create-user/")
+def create_user(user: UserBase, db: Session = Depends(get_db)):
+    db_user = User(name=user.name, email=user.email, password=user.password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
-# ## Get all Users
-# @app.get("/users/", response_model=List[User])
-# async def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-#     users = db.query(User).offset(skip).limit(limit).all()
-#     return users
+@app.put("/update-user/{user_id}")
+def update_user(user_id: int, user: UserBase, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if db_user:
+        db_user.name = user.name
+        db_user.email = user.email
+        db_user.password = user.password
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+@app.delete("/delete-user/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if db_user:
+        db.delete(db_user)
+        db.commit()
+        return {"message": "User deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
