@@ -29,9 +29,9 @@ def generateToken(user):
     ACCESS_TOKEN = token
 
 
-# @app.get("/")
-# async def root():
-#     return {"message": "Hello World"}
+@app.get("/")
+async def root():
+    return {"msg": "Hello World"}
 
 def get_db():
     db = SessionLocal()
