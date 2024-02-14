@@ -25,7 +25,7 @@ client = TestClient(app)
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"msg": "Hello World"}
+    assert response.json() == {"message": "Hello World"}
 
 # Test cases for each endpoint
 def test_register_user():

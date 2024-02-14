@@ -31,7 +31,7 @@ def generateToken(user):
 
 @app.get("/")
 async def root():
-    return {"msg": "Hello World"}
+    return {"message": "CI/CD Pipeline initiated"}
 
 def get_db():
     db = SessionLocal()
